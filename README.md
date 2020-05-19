@@ -3,30 +3,31 @@
 Shotlooter tool is developed to find sensitive data inside the screenshots which are uploaded to https://prnt.sc/ (via the LightShot software) by applying OCR and image processing methods.
 
 ```
-                                                                   +-------------------+
-          IMAGE FILE                                               |#!/usr/bin/python  |
-     +--------------------+                                        |                   +----------->SENSITIVE
-     |prnt.sc/sjgmm5      |                                        |Search for:        |
-     +--------------------+                                        |                   |
-     |      _             |      CONVERTS          STRING          |sensitive keywords |
-     |  .-.-.=\-          |      +-------+     +------------+      |                   |
-     |  (_)=='(_)         |      |       |     |            |      |high entropy       |
-     |              .._\  +----->+  OCR  +---->+ TEXTTEXTT  +----->+                   |
-     |             (o)(o) |      |       |     |            |      |credit card pattern+----------->NOT SENSITIVE
-     |   TEXTTEXTTEX      |      +-------+     +------------+      |                   |
-     |                    |                                        +-------------------+
-     +--------+-----------+
-              |                      +-----------------------+
-              |                      |#!/usr/bin/python      |
-  SMALLER     v   IMAGES             |                       +--------->SENSITIVE
-+-------------+ +------------+       |Image processing:      |
-|    _        | |    .._\    |       |                       |
-| .-.-.=\-    | |   (o)(o)   +------>+Does it contain:       |
-| (_)=='(_)   | |            |       |   ~~O                 |
-+-------------+ +------------+       |    /\,                |
-                                     |   -|~(*)              +--------->NOT SENSITIVE
-                                     |  (*)                  |
-                                     +-----------------------+
+                                                              +-------------------+
+    IMAGE FILE                                                |#!/usr/bin/python  |
++--------------------+                                        |                   +----->SENSITIVE
+|prnt.sc/sjgmm5      |                                        |Search for:        |
++--------------------+                                        |                   |
+|      _             |      CONVERTS          STRING          |sensitive keywords |
+|  .-.-.=\-          |      +-------+     +------------+      |                   |
+|  (_)=='(_)         |      |       |     |            |      |high entropy       |
+|              .._\  +----->+  OCR  +---->+ TEXTTEXTT  +----->+                   |
+|             (o)(o) |      |       |     |            |      |credit card pattern+----->NOT SENSITIVE
+|   TEXTTEXTTEX      |      +-------+     +------------+      |                   |
+|                    |                                        +-------------------+
++--------+-----------+
+        |                        +-----------------------+
+        |                        |#!/usr/bin/python      |
+SMALLER     v   IMAGES           |                       +------>SENSITIVE
++-------------+ +------------+   |Image processing:      |
+|    _        | |    .._\    |   |                       |
+| .-.-.=\-    | |   (o)(o)   +-->+ Does it contain:      |
+| (_)=='(_)   | |            |   |   ~~O                 |
++-------------+ +------------+   |    /\,                |
+                                 |   -|~(*)              +------>NOT SENSITIVE
+                                 |  (*)                  |
+                                 +-----------------------+
+
 ```
 
 ## How it Works?
