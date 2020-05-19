@@ -15,10 +15,10 @@ Shotlooter tool is developed to find sensitive data inside the screenshots which
 |             (o)(o) |      |       |     |            |      |credit card pattern+----->NOT SENSITIVE
 |   TEXTTEXTTEX      |      +-------+     +------------+      |                   |
 |                    |                                        +-------------------+
-+--------+-----------+
-        |                        +-----------------------+
-        |                        |#!/usr/bin/python      |
-SMALLER     v   IMAGES           |                       +------>SENSITIVE
++--------------+------+
+               |                 +-----------------------+
+               v                 |#!/usr/bin/python      |
+SMALLER         IMAGES           |                       +------>SENSITIVE
 +-------------+ +------------+   |Image processing:      |
 |    _        | |    .._\    |   |                       |
 | .-.-.=\-    | |   (o)(o)   +-->+ Does it contain:      |
