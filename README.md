@@ -82,7 +82,9 @@ sjgmmb
 
 It will search for the items covered in basic usage + will search for provided small images in the bigger screenshots. If you are planning to use this feature, put your small images inside the `img` folder.
 
-**Exclude Search:** You can exclude any search type by providing related argument: `--no-cc`, `--no-entropy`, `--no-keyword` .For example: `python3 shotlooter.py --code sjgmm5 --no-entropy`. Shotlooter will skip high entropy string checking.
+**Exclude Search:** You can exclude any search type by providing related argument: `--no-cc`, `--no-entropy`, `--no-keyword` 
+
+For example: `python3 shotlooter.py --code sjgmm5 --no-entropy`. Shotlooter will skip high entropy string checking.
 
 ### A Note For The False Positives
 
