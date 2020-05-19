@@ -1,0 +1,10 @@
+requests
+beautifulsoup4
+Pillow
+pytesseract
+numpy
+imutils
+opencv-python-headless
+colorama
+termcolor
+lxml
