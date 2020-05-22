@@ -91,3 +91,27 @@ For example: `python3 shotlooter.py --code sjgmm5 --no-entropy`. Shotlooter will
 Shotlooter has high false-positive rates for high entropy string and credit card matching. Actually, they are not false positives but may not be the items that you are looking for. It detects high entropy strings to catch API keys, private keys etc. However, any non-sensitive random string will have a high entropy too and Shotlooter will detect them. The same goes for the credit card. 
 
 If you don't want to deal with false positives, exclude entropy and credit card searches.
+
+## What You Should Expect to Find?
+
+I run Shotlooter for 2 weeks and identified 300+ images that contain various of sensitive data. You can check the findings that I encountered more than others below:
+
+### Postman Requests
+
+Contains useful session IDs, access tokens etc.
+
+### Cloud API Keys (Google, AWS)
+
+Screenshots are taken from the cloud's console or from a desktop client
+
+### Session ID on the URL
+
+We all know that it's not good to pass the session ID with a GET request for different reasons. This is one of them.
+
+### Credentials on Excel Sheets
+
+Some people love to use the Excel as a password manager.
+
+### Bitcoin Private Keys (This is Terrible)
+
+Bitcoin wallets allow you to export your private key so that you can import it into somewhere else. But if you publish the screenshot of your private key, your whole wallet can be compromised.
