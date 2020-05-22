@@ -36,7 +36,7 @@ SMALLER         IMAGES           |                       +------>SENSITIVE
 2) Converts the text inside the image by using tesseract OCR library.
 3) Searches for predefined keywords on the image
 4) Searches strings with high entropy (API keys usually have high entropy)
-5) Searches small images (e.g Lastpass logo) inside the downloaded image (Template Matching)
+5) Searches small images (e.g Lastpass logo) inside the downloaded image (Template Matching) with OpenCV.
 6) Saves the results to a CSV file
 7) Saves images that contain sensitive data to the `output` folder
 
