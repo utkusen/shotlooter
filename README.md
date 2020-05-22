@@ -100,18 +100,32 @@ I run Shotlooter for 2 weeks and identified 300+ images that contain various of 
 
 Contains useful session IDs, access tokens etc.
 
+<img src="examples/postman.png" width="50%">
+
 ### Cloud API Keys (Google, AWS)
 
 Screenshots are taken from the cloud's console or from a desktop client
+
+<img src="examples/google.png" width="50%">
+
+<img src="examples/aws.png" width="50%">
 
 ### Session ID on the URL
 
 We all know that it's not good to pass the session ID with a GET request for different reasons. This is one of them.
 
+<img src="examples/url.png" width="50%">
+
 ### Credentials on Excel Sheets
 
 Some people love to use the Excel as a password manager.
 
+<img src="examples/excel.png" width="50%">
+
 ### Bitcoin Private Keys (This is Terrible)
 
 Bitcoin wallets allow you to export your private key so that you can import it into somewhere else. But if you publish the screenshot of your private key, your whole wallet can be compromised.
+
+<img src="examples/btc1.png" width="50%">
+
+<img src="examples/btc2.png" width="50%">
