@@ -32,7 +32,7 @@ SMALLER         IMAGES           |                       +------>SENSITIVE
 
 ## How it Works?
 
-1) Starting from given image id, Shotlooter iterates through images (yes, image ids are not random) and downloads them locally.
+1) Starting from the given image id, Shotlooter iterates through images (yes, image ids are not random) and downloads them locally.
 2) Converts the text inside the image by using tesseract OCR library.
 3) Searches for predefined keywords on the image
 4) Searches strings with high entropy (API keys usually have high entropy)
