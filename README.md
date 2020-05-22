@@ -34,7 +34,7 @@ SMALLER         IMAGES           |                       +------>SENSITIVE
 
 1) Starting from the given image id, Shotlooter iterates through images (yes, image ids are not random) and downloads them locally.
 2) Converts the text inside the image by using tesseract OCR library.
-3) Searches for predefined keywords on the image
+3) Searches for predefined keywords on the image (*private_key,smtp_pass,access key,mongodb+srv* etc.)
 4) Searches strings with high entropy (API keys usually have high entropy)
 5) Searches small images (e.g Lastpass logo) inside the downloaded image (Template Matching) with OpenCV.
 6) Saves the results to a CSV file
