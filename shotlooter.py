@@ -158,8 +158,10 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
     keywords = []
     numbers = re.compile('\d+(?:\.\d+)?')
     with open("keywords.txt", "r") as f:
-        for line in f:
-            keywords.append(line.rstrip('\n').lower())
+        for line in f:    
+            line_rstripped = line.rstrip()
+            if line_rstripped:
+                keywords.append(line_rstripped.lower())
     while True:
         code = next_code(code)
         try:
