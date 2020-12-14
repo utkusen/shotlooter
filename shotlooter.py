@@ -54,7 +54,6 @@ headers = {
 code_chars = list(string.ascii_lowercase) + ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 base = len(code_chars)
 
-
 # searches for a template(small image) in a image, returns True if found, False if not found
 def template_match(fname_template, fname_image):
     template0 = cv2.imread(fname_template)
@@ -113,7 +112,10 @@ def get_img_url(code):
     html = requests.get(f"https://prnt.sc/{code}", headers=headers).text
     soup = BeautifulSoup(html, 'lxml')
     img_url = soup.find_all('img', {'class': 'no-click screenshot-image'})
-    return img_url[0]['src']
+    img_url = img_url[0]['src']
+    if img_url.find('https:') == - 1:
+        img_url = 'https:' + img_url
+    return img_url
 
 def get_img(url, path):
     response = requests.get(url)
@@ -162,11 +164,10 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
             line_rstripped = line.rstrip()
             if line_rstripped:
                 keywords.append(line_rstripped.lower())
-    while True:
-        code = next_code(code)
+    while True:        
         try:
             flag = False
-            img_path = os.getcwd()+"/output/"+code
+            img_path = os.getcwd()+"\\output\\"+code
             url = get_img_url(code)
             get_img(url, img_path)
             print("Analyzing: " +code)
@@ -175,7 +176,7 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
                 for word in keywords:
                     if word.lower() in image_text.lower():
                         print(colored("Keyword Match: " + word,"green"))
-                        with open("findings.csv","a+") as f:
+                        with open("findings.csv","a+", encoding="utf-8") as f:
                             f.write("keyword,"+word+","+code)
                             f.write("\n")
                         flag = True
@@ -186,14 +187,14 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
                         number = numbers.findall(word)
                         if is_valid_cc(number[0]):
                             print(colored("Credit Card Detected: " + number[0],"yellow"))
-                            with open("findings.csv", "a+") as f:
+                            with open("findings.csv", "a+", encoding="utf-8") as f:
                                 f.write("credit_card,"+number[0]+","+code)
                                 f.write("\n")
                             flag = True
                 if no_entropy is None:
                     if entropy(unicodedata.normalize('NFKD', word).encode('ascii','ignore').decode('utf-8')) >= 4.5 and "http" not in word and "/" not in word and len(word) < 65:
                         print(colored("High Entropy Detected: " + word,"magenta"))
-                        with open("findings.csv","a+") as f:
+                        with open("findings.csv","a+", encoding="utf-8") as f:
                             f.write("entropy,"+word+","+code)
                             f.write("\n")
                         flag = True
@@ -204,7 +205,7 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
                         is_found = template_match(imagedir + "/" + file, img_path+".png")
                         if is_found:
                             print(colored("Image Match Detected: " + file, 'cyan'))
-                            with open("findings.csv", "a+") as f:
+                            with open("findings.csv", "a+", encoding="utf-8") as f:
                                 f.write("image," + file + "," + code)
                                 f.write("\n")
                             flag = True
@@ -212,7 +213,8 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
                 os.remove(img_path+".png")
         except Exception as e:
             print(e)
-
+        code = next_code(code)
+        
 signal(SIGINT, handler)
 
 parser = argparse.ArgumentParser()
@@ -232,3 +234,4 @@ if argv.no_keyword:
     argv.no_keyword = True
 
 action(argv.code,argv.imagedir,argv.no_entropy,argv.no_cc,argv.no_keyword)
+
