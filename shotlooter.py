@@ -167,7 +167,7 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
     while True:        
         try:
             flag = False
-            img_path = os.getcwd()+"\\output\\"+code
+            img_path = os.getcwd()+"//output//"+code
             url = get_img_url(code)
             get_img(url, img_path)
             print("Analyzing: " +code)
