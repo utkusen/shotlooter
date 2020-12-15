@@ -48,6 +48,8 @@ Shotlooter requires Python3, pip3 to work and tested on macOS and Debian based L
 
 **Installing Dependencies for Debian Based Linux:** `sudo apt install libsm6 libxext6 libxrender-dev tesseract-ocr -y`
 
+**Installing Dependencies for Windows:** Download tesseract from https://digi.bib.uni-mannheim.de/tesseract/ and install. You may add `pytesseract.pytesseract.tesseract_cmd = r'your_full_path_to_tesseract_binary'` in shotlooter.py if you have problem with TesseractNotFound error.
+
 Clone the repository:
 
 `git clone https://github.com/utkusen/shotlooter.git`
@@ -59,6 +61,10 @@ Go inside the folder
 Install required libraries
 
 `pip3 install -r requirements.txt`
+
+
+
+
 
 ## Usage
 
