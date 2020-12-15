@@ -167,11 +167,11 @@ def action(code,imagedir,no_entropy,no_cc,no_keyword):
     while True:        
         try:
             flag = False
-            img_path = os.getcwd()+"//output//"+code
+            img_path = os.path.join(os.getcwd(),"output",code)
             url = get_img_url(code)
             get_img(url, img_path)
             print("Analyzing: " +code)
-            image_text = pytesseract.image_to_string(Image.open(img_path+".png"))
+            image_text = pytesseract.image_to_string(Image.open(img_path+".png").convert("RGBA"))
             if no_keyword is None:
                 for word in keywords:
                     if word.lower() in image_text.lower():
