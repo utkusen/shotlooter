@@ -130,10 +130,9 @@ Bitcoin wallets allow you to export your private key so that you can import it i
 
 <img src="examples/btc2.png" width="50%">
 
-TODO:
+# TODO:
 
 * use pathlib instead of os
 * add a logger with logging module
 * add type hinting
-* only write images to disks if there is a potential match, otherwise do everyting in memory
 * make it async
