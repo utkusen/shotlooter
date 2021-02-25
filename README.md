@@ -42,7 +42,7 @@ SMALLER         IMAGES           |                       +------>SENSITIVE
 
 ## Installation
 
-Shotlooter requires Python3, pip3 to work and tested on macOS and Debian based Linux systems. 
+Shotlooter requires Python3, pip3 to work and tested on macOS and Debian based Linux systems.
 
 **Installing Dependencies for macOS:** `brew install tesseract`
 
@@ -62,9 +62,9 @@ Install required libraries
 
 ## Usage
 
-**Basic Usage:** `python3 shotlooter.py --code PRNT.SC_ID` 
+**Basic Usage:** `python3 shotlooter.py --code PRNT.SC_ID`
 
-It searches for matching keywords (located in `keywords.txt`), high entropy strings and credit card numbers. You can find an id by uploading an image to https://prnt.sc/ . For example `python3 shotlooter.py --code sjgmm5` 
+It searches for matching keywords (located in `keywords.txt`), high entropy strings and credit card numbers. You can find an id by uploading an image to https://prnt.sc/ . For example `python3 shotlooter.py --code sjgmm5`
 
 It will check the ids by incrementing them one by one:
 
@@ -78,17 +78,17 @@ sjgmmb
 ...
 ```
 
-**Image Search:** `python3 shotlooter.py --code sjgmm5 --imagedir IMAGE_FOLDER_PATH` 
+**Image Search:** `python3 shotlooter.py --code sjgmm5 --imagedir IMAGE_FOLDER_PATH`
 
 It will search for the items covered in basic usage + will search for provided small images in the bigger screenshots. If you are planning to use this feature, put your small images inside the `img` folder.
 
-**Exclude Search:** You can exclude any search type by providing related argument: `--no-cc`, `--no-entropy`, `--no-keyword` 
+**Exclude Search:** You can exclude any search type by providing related argument: `--no-cc`, `--no-entropy`, `--no-keyword`
 
 For example: `python3 shotlooter.py --code sjgmm5 --no-entropy`. Shotlooter will skip high entropy string checking.
 
 ### A Note For The False Positives
 
-Shotlooter has high false-positive rates for high entropy string and credit card matching. Actually, they are not false positives but may not be the items that you are looking for. It detects high entropy strings to catch API keys, private keys etc. However, any non-sensitive random string will have a high entropy too and Shotlooter will detect them. The same goes for the credit card. 
+Shotlooter has high false-positive rates for high entropy string and credit card matching. Actually, they are not false positives but may not be the items that you are looking for. It detects high entropy strings to catch API keys, private keys etc. However, any non-sensitive random string will have a high entropy too and Shotlooter will detect them. The same goes for the credit card.
 
 If you don't want to deal with false positives, exclude entropy and credit card searches.
 
@@ -129,3 +129,11 @@ Bitcoin wallets allow you to export your private key so that you can import it i
 <img src="examples/btc1.png" width="50%">
 
 <img src="examples/btc2.png" width="50%">
+
+TODO:
+
+* use pathlib instead of os
+* add a logger with logging module
+* add type hinting
+* only write images to disks if there is a potential match, otherwise do everyting in memory
+* make it async
