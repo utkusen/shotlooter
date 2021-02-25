@@ -23,6 +23,7 @@ import pytesseract
 import re
 import math
 import os
+import io
 from signal import signal, SIGINT
 import sys
 import unicodedata
@@ -34,7 +35,6 @@ from os import listdir
 from os.path import isfile, join
 from colorama import init
 from termcolor import colored
-init()
 
 
 def handler(signal_received, frame):
@@ -117,18 +117,14 @@ def next_code(curr_code):
     return str_base(curr_code_num + 1, base)
 
 
-def get_img_url(code):
+def get_img(code):
     html = requests.get(f"https://prnt.sc/{code}", headers=headers).text
     soup = BeautifulSoup(html, 'lxml')
-    img_url = soup.find_all('img', {'class': 'no-click screenshot-image'})
-    return img_url[0]['src']
-
-
-def get_img(url, path):
-    response = requests.get(url)
+    img_url = soup.find_all('img',
+                            {'class': 'no-click screenshot-image'})[0]['src']
+    response = requests.get(img_url)
     if response.status_code == 200:
-        with open(f"{path}.png", 'wb') as f:
-            f.write(response.content)
+        return Image.open(io.BytesIO(response.content))
 
 
 #https://github.com/joshleeb/creditcard/blob/master/creditcard/luhn.py
@@ -222,14 +218,15 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
         code = next_code(code)
         try:
             flag = False
-            img_path = os.getcwd() + "/output/" + code
-            url = get_img_url(code)
-            get_img(url, img_path)
+            image = get_img(code)
             print("Analyzing: " + code)
-            image_text = pytesseract.image_to_string(
-                Image.open(img_path + ".png"))
+            image_text = pytesseract.image_to_string(image)
+            img_path = os.getcwd() + "/output/" + code
+            # Keywords Analysis
             if not no_keyword:
                 for word in keywords:
+
+                    # Append findings
                     if word.lower() in image_text.lower():
                         print(colored("Keyword Match: " + word, "green"))
                         with open("findings.csv", "a+") as f:
@@ -237,6 +234,8 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                             f.write("\n")
                         flag = True
             image_words = image_text.split()
+
+            # Credit Cards Analysis
             for word in image_words:
                 if not no_cc:
                     if hasNumbers(word):
@@ -263,6 +262,8 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                             f.write("entropy," + word + "," + code)
                             f.write("\n")
                         flag = True
+
+            # Logo Analysis
             if imagedir is not None:
                 files = [
                     f for f in listdir(imagedir) if isfile(join(imagedir, f))
@@ -279,8 +280,8 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                                 f.write("image," + file + "," + code)
                                 f.write("\n")
                             flag = True
-            if not flag:
-                os.remove(img_path + ".png")
+            if flag:
+                image.save(img_path + ".png")
         except Exception as e:
             print(e)
 
