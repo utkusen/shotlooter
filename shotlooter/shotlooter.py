@@ -191,17 +191,17 @@ def parse_args() -> argparse.Namespace:
                         action='store_true',
                         dest='no_entropy',
                         help="Don't search for high entropy.",
-                        default=None)
+                        default=False)
     parser.add_argument('--no-cc',
                         action='store_true',
                         dest='no_cc',
                         help="Don't search for credit card.",
-                        default=None)
+                        default=False)
     parser.add_argument('--no-keyword',
                         action='store_true',
                         dest='no_keyword',
                         help="Don't search for keywords.",
-                        default=None)
+                        default=False)
     parser.add_argument('--keywords_path',
                         action='store',
                         dest='keywords_path',
@@ -228,7 +228,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
             print("Analyzing: " + code)
             image_text = pytesseract.image_to_string(
                 Image.open(img_path + ".png"))
-            if no_keyword is None:
+            if not no_keyword:
                 for word in keywords:
                     if word.lower() in image_text.lower():
                         print(colored("Keyword Match: " + word, "green"))
@@ -238,7 +238,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                         flag = True
             image_words = image_text.split()
             for word in image_words:
-                if no_cc is None:
+                if not no_cc:
                     if hasNumbers(word):
                         number = numbers.findall(word)
                         if is_valid_cc(number[0]):
@@ -250,7 +250,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                                         code)
                                 f.write("\n")
                             flag = True
-                if no_entropy is None:
+                if not no_entropy:
                     if entropy(
                             unicodedata.normalize('NFKD', word).encode(
                                 'ascii', 'ignore').decode('utf-8')
