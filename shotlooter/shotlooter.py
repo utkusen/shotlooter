@@ -213,13 +213,12 @@ def append_findings(style: str, match: str, code: str):
 
 
 def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
-    keywords = []
     numbers = re.compile('\d+(?:\.\d+)?')
     with open(keywords_path, "r") as f:
-        for line in f:
-            line_rstripped = line.rstrip()
-            if line_rstripped:
-                keywords.append(line_rstripped.lower())
+        keywords = [
+            keyword.lower()
+            for keyword in open(keywords_path, "r").read().splitlines()
+        ]
     while True:
         code = next_code(code)
         try:
