@@ -206,6 +206,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def append_findings(style: str, match: str, code: str):
+    with open("findings.csv", "a+") as f:
+        f.write(f"{style},{match},{code}")
+        f.write("\n")
+
+
 def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
     keywords = []
     numbers = re.compile('\d+(?:\.\d+)?')
@@ -229,9 +235,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                     # Append findings
                     if word.lower() in image_text.lower():
                         print(colored("Keyword Match: " + word, "green"))
-                        with open("findings.csv", "a+") as f:
-                            f.write("keyword," + word + "," + code)
-                            f.write("\n")
+                        append_findings("keyword", word, code)
                         flag = True
             image_words = image_text.split()
 
@@ -244,10 +248,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                             print(
                                 colored("Credit Card Detected: " + number[0],
                                         "yellow"))
-                            with open("findings.csv", "a+") as f:
-                                f.write("credit_card," + number[0] + "," +
-                                        code)
-                                f.write("\n")
+                            append_findings("credit_card", number[0], code)
                             flag = True
                 if not no_entropy:
                     if entropy(
@@ -258,9 +259,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                         print(
                             colored("High Entropy Detected: " + word,
                                     "magenta"))
-                        with open("findings.csv", "a+") as f:
-                            f.write("entropy," + word + "," + code)
-                            f.write("\n")
+                        append_findings("entropy", word, code)
                         flag = True
 
             # Logo Analysis
@@ -276,9 +275,7 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
                             print(
                                 colored("Image Match Detected: " + file,
                                         'cyan'))
-                            with open("findings.csv", "a+") as f:
-                                f.write("image," + file + "," + code)
-                                f.write("\n")
+                            append_findings("image", file, code)
                             flag = True
             if flag:
                 image.save(img_path + ".png")
