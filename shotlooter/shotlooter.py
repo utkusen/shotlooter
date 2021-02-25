@@ -169,6 +169,56 @@ def entropy(string):
     return entropy
 
 
+def keywords_analysis(keywords, image_text, code):
+    match = False
+    for word in keywords:
+        # Append findings
+        if word.lower() in image_text.lower():
+            print(colored("Keyword Match: " + word, "green"))
+            append_findings("keyword", word, code)
+            match = True
+    return match
+
+
+def credit_card_analysis(image_words, code):
+    numbers = re.compile('\d+(?:\.\d+)?')
+    match = False
+    for word in image_words:
+        if hasNumbers(word):
+            number = numbers.findall(word)
+            if is_valid_cc(number[0]):
+                print(colored("Credit Card Detected: " + number[0], "yellow"))
+                append_findings("credit_card", number[0], code)
+                match = True
+    return match
+
+
+def entropy_analysis(image_words, code):
+    for word in image_words:
+        if entropy(
+                unicodedata.normalize('NFKD', word).encode(
+                    'ascii', 'ignore').decode('utf-8')
+        ) >= 4.5 and "http" not in word and "/" not in word and len(word) < 65:
+            print(colored("High Entropy Detected: " + word, "magenta"))
+            append_findings("entropy", word, code)
+            return True
+    return False
+
+
+def image_analysis(imagedir, code):
+    match = False
+    files = [f for f in listdir(imagedir) if isfile(join(imagedir, f))]
+    for file in files:
+        if ".png" in file or ".jpg" in file:
+            is_found = template_match(imagedir + "/" + file,
+                                      os.getcwd() + "/output/" + code + ".png")
+        if is_found:
+            print(colored("Image Match Detected: " + file, 'cyan'))
+            append_findings("image", file, code)
+            match = True
+    return match
+
+
 def parse_args() -> argparse.Namespace:
     """Parse the CLI arguments of the program."""
     parser = argparse.ArgumentParser()
@@ -213,7 +263,6 @@ def append_findings(style: str, match: str, code: str):
 
 
 def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
-    numbers = re.compile('\d+(?:\.\d+)?')
     with open(keywords_path, "r") as f:
         keywords = [
             keyword.lower()
@@ -222,62 +271,28 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
     while True:
         code = next_code(code)
         try:
-            flag = False
+            match = False
             image = get_img(code)
             print("Analyzing: " + code)
             image_text = pytesseract.image_to_string(image)
-            img_path = os.getcwd() + "/output/" + code
-            # Keywords Analysis
-            if not no_keyword:
-                for word in keywords:
-
-                    # Append findings
-                    if word.lower() in image_text.lower():
-                        print(colored("Keyword Match: " + word, "green"))
-                        append_findings("keyword", word, code)
-                        flag = True
             image_words = image_text.split()
 
+            # Keywords Analysis
+            if not no_keyword:
+                match = keywords_analysis(keywords, image_text, code)
+
             # Credit Cards Analysis
-            for word in image_words:
-                if not no_cc:
-                    if hasNumbers(word):
-                        number = numbers.findall(word)
-                        if is_valid_cc(number[0]):
-                            print(
-                                colored("Credit Card Detected: " + number[0],
-                                        "yellow"))
-                            append_findings("credit_card", number[0], code)
-                            flag = True
+            if not no_cc:
+                match = credit_card_analysis(image_words, code)
                 if not no_entropy:
-                    if entropy(
-                            unicodedata.normalize('NFKD', word).encode(
-                                'ascii', 'ignore').decode('utf-8')
-                    ) >= 4.5 and "http" not in word and "/" not in word and len(
-                            word) < 65:
-                        print(
-                            colored("High Entropy Detected: " + word,
-                                    "magenta"))
-                        append_findings("entropy", word, code)
-                        flag = True
+                    match = entropy_analysis(image_words, code)
 
             # Logo Analysis
             if imagedir is not None:
-                files = [
-                    f for f in listdir(imagedir) if isfile(join(imagedir, f))
-                ]
-                for file in files:
-                    if ".png" in file or ".jpg" in file:
-                        is_found = template_match(imagedir + "/" + file,
-                                                  img_path + ".png")
-                        if is_found:
-                            print(
-                                colored("Image Match Detected: " + file,
-                                        'cyan'))
-                            append_findings("image", file, code)
-                            flag = True
-            if flag:
-                image.save(img_path + ".png")
+                match = image_analysis(imagedir, code)
+
+            if match:
+                image.save(os.getcwd() + "/output/" + code + ".png")
         except Exception as e:
             print(e)
 
