@@ -202,14 +202,18 @@ def parse_args() -> argparse.Namespace:
                         dest='no_keyword',
                         help="Don't search for keywords.",
                         default=None)
-
+    parser.add_argument('--keywords_path',
+                        action='store',
+                        dest='keywords_path',
+                        help='Keywords text file path.',
+                        required=True)
     return parser.parse_args()
 
 
-def action(code, imagedir, no_entropy, no_cc, no_keyword):
+def action(code, imagedir, no_entropy, no_cc, no_keyword, keywords_path):
     keywords = []
     numbers = re.compile('\d+(?:\.\d+)?')
-    with open("keywords.txt", "r") as f:
+    with open(keywords_path, "r") as f:
         for line in f:
             line_rstripped = line.rstrip()
             if line_rstripped:
@@ -284,4 +288,4 @@ def action(code, imagedir, no_entropy, no_cc, no_keyword):
 def main():
     args = parse_args()
     action(args.code, args.imagedir, args.no_entropy, args.no_cc,
-           args.no_keyword)
+           args.no_keyword, args.keywords_path)
