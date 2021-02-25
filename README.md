@@ -58,13 +58,13 @@ Go inside the folder
 
 Install required libraries
 
-`pip3 install -r requirements.txt`
+`pip3 install .`
 
 ## Usage
 
-**Basic Usage:** `python3 shotlooter.py --code PRNT.SC_ID`
+**Basic Usage:** `shotlooter --code PRNT.SC_ID`
 
-It searches for matching keywords (located in `keywords.txt`), high entropy strings and credit card numbers. You can find an id by uploading an image to https://prnt.sc/ . For example `python3 shotlooter.py --code sjgmm5`
+It searches for matching keywords (located in `keywords.txt`), high entropy strings and credit card numbers. You can find an id by uploading an image to https://prnt.sc/ . For example `shotlooter --code sjgmm5`
 
 It will check the ids by incrementing them one by one:
 
