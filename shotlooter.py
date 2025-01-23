@@ -18,36 +18,49 @@
 import requests
 from bs4 import BeautifulSoup
 import string
-import argparse as parser
+import argparse
 from PIL import Image
 import pytesseract
 import re
 import math
 import os
-from signal import signal, SIGINT
 import sys
 import unicodedata
 import numpy as np
 import imutils
 import cv2
-import argparse
 from os import listdir
 from os.path import isfile, join
 from colorama import init
 from termcolor import colored
+from signal import signal, SIGINT
+import time
+import random
+
 init()
 
 def handler(signal_received, frame):
     sys.exit(0)
 
 
+# Create a session object to maintain cookies
+session = requests.Session()
+
 headers = {
-    'cache-control': 'max-age=0',
-    'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36',
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-    'accept-encoding': 'gzip, deflate',
-    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site',
+    'Sec-Fetch-User': '?1',
+    'sec-ch-ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'Cache-Control': 'max-age=0',
 }
 
 
@@ -56,7 +69,7 @@ base = len(code_chars)
 
 
 # searches for a template(small image) in a image, returns True if found, False if not found
-def template_match(fname_template, fname_image):
+def template_match(fname_template: str, fname_image: str) -> bool:
     template0 = cv2.imread(fname_template)
     template = cv2.cvtColor(template0, cv2.COLOR_BGR2GRAY)
     template = cv2.Canny(template, 50, 200)
@@ -92,12 +105,12 @@ def template_match(fname_template, fname_image):
     return isFound
 
 # prnt.sc parser codes mostly borrowed from https://github.com/mitchelljy/Prntsc_Scraper
-def digit_to_char(digit):
+def digit_to_char(digit: int) -> str:
     if digit < 10:
         return str(digit)
     return chr(ord('a') + digit - 10)
 
-def str_base(number, base):
+def str_base(number: int, base: int) -> str:
     if number < 0:
         return '-' + str_base(-number, base)
     (d, m) = divmod(number, base)
@@ -105,21 +118,49 @@ def str_base(number, base):
         return str_base(d, base) + digit_to_char(m)
     return digit_to_char(m)
 
-def next_code(curr_code):
+def next_code(curr_code: str) -> str:
     curr_code_num = int(curr_code, base)
     return str_base(curr_code_num + 1, base)
 
-def get_img_url(code):
-    html = requests.get(f"https://prnt.sc/{code}", headers=headers).text
-    soup = BeautifulSoup(html, 'lxml')
-    img_url = soup.find_all('img', {'class': 'no-click screenshot-image'})
-    return img_url[0]['src']
+def get_img_url(code: str) -> str:
+    # Add a small random delay before each request
+    time.sleep(random.uniform(1, 3))
+    
+    url = f"https://prnt.sc/{code}"
+    try:
+        # Use session instead of requests directly
+        response = session.get(url, headers=headers, timeout=10)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        
+        soup = BeautifulSoup(response.text, 'lxml')
+        img_url = soup.find_all('img', {'class': 'no-click screenshot-image'})
+        if not img_url:
+            print(f"No image found for code: {code}")
+            return None
+            
+        url = img_url[0]['src']
+        if url.startswith('//'):
+            url = 'https:' + url
+        return url
+    except Exception as e:
+        print(f"Error getting image URL: {e}")
+        return None
 
-def get_img(url, path):
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(f"{path}.png", 'wb') as f:
-            f.write(response.content)
+def get_img(url: str, path: str) -> bool:
+    if not url:
+        return False
+        
+    try:
+        # Use session for image download too
+        response = session.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            with open(f"{path}.png", 'wb') as f:
+                f.write(response.content)
+            return True
+        return False
+    except requests.RequestException as e:
+        print(f"Error downloading image: {e}")
+        return False
 
 #https://github.com/joshleeb/creditcard/blob/master/creditcard/luhn.py
 def get_check_digit(unchecked):
@@ -128,7 +169,7 @@ def get_check_digit(unchecked):
         sum(digits_of(2 * d)) for d in odd_digits(unchecked)])
     return 9 * checksum % 10
 
-def is_valid_cc(number):
+def is_valid_cc(number: str) -> bool:
     if len(number) != 16:
         return False
     n = str(number)
@@ -145,71 +186,94 @@ def even_digits(number):
 def odd_digits(number):
     return list(map(int, str(number)[-1::-2]))
 
-def hasNumbers(inputString):
+def hasNumbers(inputString: str) -> bool:
     return any(char.isdigit() for char in inputString)
 
-def entropy(string):
+def entropy(string: str) -> float:
     prob = [float(string.count(c)) / len(string) for c in dict.fromkeys(list(string))]
     entropy = - sum([p * math.log(p) / math.log(2.0) for p in prob])
     return entropy
 
 
-def action(code,imagedir,no_entropy,no_cc,no_keyword):
-    keywords = []
-    numbers = re.compile('\d+(?:\.\d+)?')
-    with open("keywords.txt", "r") as f:
-        for line in f:    
-            line_rstripped = line.rstrip()
-            if line_rstripped:
-                keywords.append(line_rstripped.lower())
+def action(
+    code: str,
+    imagedir: str | None,
+    no_entropy: bool,
+    no_cc: bool,
+    no_keyword: bool,
+    delay: float
+) -> None:
+    # Create output directory if it doesn't exist
+    output_dir = os.path.join(os.getcwd(), "output")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Create findings.csv in the output directory if it doesn't exist
+    findings_file = os.path.join(output_dir, "findings.csv")
+    if not os.path.exists(findings_file):
+        with open(findings_file, "w") as f:
+            f.write("type,value,code\n")
+    
+    numbers = re.compile(r'\d+(?:\.\d+)?')
+    
+    # Use context manager for file operations
+    with open("keywords.txt", "r", encoding='utf-8') as f:
+        keywords = [line.rstrip().lower() for line in f if line.rstrip()]
+    
     while True:
         code = next_code(code)
         try:
             flag = False
-            img_path = os.getcwd()+"/output/"+code
+            img_path = os.path.join(output_dir, code)
             url = get_img_url(code)
-            get_img(url, img_path)
-            print("Analyzing: " +code)
-            image_text = pytesseract.image_to_string(Image.open(img_path+".png"))
+            print("Extracted URL:", url)
+            success = get_img(url, img_path)
+            
+            if not success:
+                print(f"Failed to download image for code: {code}")
+                
+                if delay > 0:
+                    print(f"Waiting {delay} seconds before next request...")
+                    time.sleep(delay)
+                continue
+                
+            print(f"Analyzing: {code}")
+            
+            # Check if image file exists before processing
+            img_file = f"{img_path}.png"
+            if not os.path.exists(img_file):
+                print(f"Failed to download image for code: {code}")
+                continue
+                
+            image_text = pytesseract.image_to_string(Image.open(img_file))
             if no_keyword is None:
                 for word in keywords:
                     if word.lower() in image_text.lower():
-                        print(colored("Keyword Match: " + word,"green"))
-                        with open("findings.csv","a+") as f:
-                            f.write("keyword,"+word+","+code)
-                            f.write("\n")
+                        print(colored(f"Keyword Match: {word}", "green"))
+                        with open(findings_file, "a") as f:
+                            f.write(f"keyword,{word},{code}\n")
                         flag = True
+            
             image_words = image_text.split()
             for word in image_words:
                 if no_cc is None:
                     if hasNumbers(word):
                         number = numbers.findall(word)
-                        if is_valid_cc(number[0]):
-                            print(colored("Credit Card Detected: " + number[0],"yellow"))
-                            with open("findings.csv", "a+") as f:
-                                f.write("credit_card,"+number[0]+","+code)
-                                f.write("\n")
+                        if number and is_valid_cc(number[0]):
+                            print(colored(f"Credit Card Detected: {number[0]}", "yellow"))
+                            with open(findings_file, "a") as f:
+                                f.write(f"credit_card,{number[0]},{code}\n")
                             flag = True
                 if no_entropy is None:
                     if entropy(unicodedata.normalize('NFKD', word).encode('ascii','ignore').decode('utf-8')) >= 4.5 and "http" not in word and "/" not in word and len(word) < 65:
-                        print(colored("High Entropy Detected: " + word,"magenta"))
-                        with open("findings.csv","a+") as f:
-                            f.write("entropy,"+word+","+code)
-                            f.write("\n")
+                        print(colored(f"High Entropy Detected: {word}", "magenta"))
+                        with open(findings_file, "a") as f:
+                            f.write(f"entropy,{word},{code}\n")
                         flag = True
-            if imagedir is not None:
-                files = [f for f in listdir(imagedir) if isfile(join(imagedir, f))]
-                for file in files:
-                    if ".png" in file or ".jpg" in file:
-                        is_found = template_match(imagedir + "/" + file, img_path+".png")
-                        if is_found:
-                            print(colored("Image Match Detected: " + file, 'cyan'))
-                            with open("findings.csv", "a+") as f:
-                                f.write("image," + file + "," + code)
-                                f.write("\n")
-                            flag = True
+            
             if not flag:
-                os.remove(img_path+".png")
+                if os.path.exists(img_file):
+                    os.remove(img_file)
         except Exception as e:
             print(e)
 
@@ -221,8 +285,8 @@ parser.add_argument('--imagedir', action='store', dest='imagedir', help='Image d
 parser.add_argument('--no-entropy', action='store_true', dest='no_entropy', help="Don't search for high entropy", default=None)
 parser.add_argument('--no-cc', action='store_true', dest='no_cc', help="Don't search for credit card", default=None)
 parser.add_argument('--no-keyword', action='store_true', dest='no_keyword', help="Don't search for keywords", default=None)
+parser.add_argument('--delay', action='store', dest='delay', help='Delay between requests in seconds', type=float, default=10.0)
 argv = parser.parse_args()
-
 
 if argv.no_entropy:
     argv.no_entropy = True
@@ -231,4 +295,4 @@ if argv.no_cc:
 if argv.no_keyword:
     argv.no_keyword = True
 
-action(argv.code,argv.imagedir,argv.no_entropy,argv.no_cc,argv.no_keyword)
+action(argv.code, argv.imagedir, argv.no_entropy, argv.no_cc, argv.no_keyword, argv.delay)
